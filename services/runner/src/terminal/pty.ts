@@ -1,5 +1,4 @@
-import { type Socket } from "net";
-import { EventEmitter } from "events";
+type PTYEventHandler = (event: string, data: any) => void;
 
 export interface PTYOptions {
   shell: string;
@@ -9,24 +8,23 @@ export interface PTYOptions {
   rows?: number;
 }
 
-export class PTY extends EventEmitter {
-  private process: any = null;
+export class PTY {
+  private handler: PTYEventHandler | null = null;
   public pid: number | null = null;
 
-  constructor(private options: PTYOptions) {
-    super();
+  constructor(private options: PTYOptions) {}
+
+  on(handler: PTYEventHandler): void {
+    this.handler = handler;
   }
 
   async spawn(): Promise<void> {
-    // In production, this would use node-pty
-    // For now, interface definition
     this.pid = Math.floor(Math.random() * 10000);
-    this.emit("spawn", { pid: this.pid });
+    if (this.handler) this.handler("spawn", { pid: this.pid });
   }
 
   write(data: string): void {
-    // Write input to the PTY
-    this.emit("output", `[echo] ${data.trim()}`);
+    if (this.handler) this.handler("output", `[echo] ${data.trim()}`);
   }
 
   resize(cols: number, rows: number): void {
@@ -37,7 +35,7 @@ export class PTY extends EventEmitter {
   kill(): void {
     if (this.pid) {
       this.pid = null;
-      this.emit("exit", { code: 0 });
+      if (this.handler) this.handler("exit", { code: 0 });
     }
   }
 }

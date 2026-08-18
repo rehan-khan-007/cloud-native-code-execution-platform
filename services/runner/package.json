@@ -8,6 +8,8 @@
   },
   "dependencies": {
     "@types/node": "^26.2.0",
-    "typescript": "^7.0.2"
+    "@types/ws": "^8.18.1",
+    "typescript": "^7.0.2",
+    "ws": "^8.21.3"
   }
 }

@@ -18,21 +18,26 @@ export class TerminalServer {
     wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
       const workspaceId = this.extractWorkspaceId(req.url || "");
       const pty = new PTY({ shell: "/bin/bash", cols: 80, rows: 24 });
+
+      pty.on((event, data) => {
+        if (event === "output" && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: "output", data }));
+        }
+      });
+
       pty.spawn();
 
       const conn: WSConnection = { ws, pty, workspaceId };
       this.connections.set(workspaceId, conn);
 
-      pty.on("output", (data: string) => {
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({ type: "output", data }));
-        }
-      });
-
       ws.on("message", (raw: Buffer) => {
-        const msg = JSON.parse(raw.toString());
-        if (msg.type === "input") pty.write(msg.data);
-        if (msg.type === "resize") pty.resize(msg.cols, msg.rows);
+        try {
+          const msg = JSON.parse(raw.toString());
+          if (msg.type === "input") pty.write(msg.data);
+          if (msg.type === "resize") pty.resize(msg.cols, msg.rows);
+        } catch {
+          /* ignore malformed */
+        }
       });
 
       ws.on("close", () => {
@@ -45,6 +50,7 @@ export class TerminalServer {
   }
 
   private extractWorkspaceId(url: string): string {
-    return url.replace("/", "").split("?")[0] || "unknown";
+    const u = new URL(url, "http://localhost");
+    return u.searchParams.get("workspaceId") || "unknown";
   }
 }
