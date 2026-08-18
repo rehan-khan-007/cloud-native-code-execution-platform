@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: workspace-${WORKSPACE_ID}
+  labels:
+    app: workspace
+    workspace-id: ${WORKSPACE_ID}
+spec:
+  containers:
+  - name: runner
+    image: ${RUNNER_IMAGE:-ghcr.io/rehan-khan-007/runner:latest}
+    ports:
+    - containerPort: 8080
+      protocol: TCP
+    env:
+    - name: WORKSPACE_ID
+      value: "${WORKSPACE_ID}"
+    - name: STORAGE_BACKEND
+      value: "s3"
+    resources:
+      requests:
+        memory: "${MEMORY_REQUEST:-512Mi}"
+        cpu: "${CPU_REQUEST:-0.5}"
+      limits:
+        memory: "${MEMORY_LIMIT:-1Gi}"
+        cpu: "${CPU_LIMIT:-1}"
+    volumeMounts:
+    - name: workspace-storage
+      mountPath: /home/workspace
+  volumes:
+  - name: workspace-storage
+    persistentVolumeClaim:
+      claimName: pvc-${WORKSPACE_ID}
+  restartPolicy: Never
