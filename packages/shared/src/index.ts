@@ -1,9 +1,7 @@
-export type WorkspaceStatus = "provisioning" | "running" | "stopped" | "failed";
-
 export interface Workspace {
   id: string;
   userId: string;
-  status: WorkspaceStatus;
+  status: "provisioning" | "running" | "stopped" | "failed";
   runtime: "python" | "node" | "cpp";
   createdAt: string;
 }
@@ -13,12 +11,4 @@ export interface TerminalMessage {
   data: string;
   cols?: number;
   rows?: number;
-}
-
-export interface BenchmarkResult {
-  metric: string;
-  value: number;
-  unit: string;
-  p95?: number;
-  p99?: number;
 }

@@ -1,0 +1,13 @@
+{
+  "name": "orchestrator",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc || true",
+    "test": "echo no tests"
+  },
+  "dependencies": {
+    "@types/node": "^26.2.0",
+    "typescript": "^7.0.2"
+  }
+}

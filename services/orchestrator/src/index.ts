@@ -1,9 +1,12 @@
-import { Workspace } from "../../../../packages/shared/src";
+import { Workspace } from "../../../packages/shared/src/index";
 
 export class Orchestrator {
-  async provisionWorkspace(userId: string, runtime: Workspace["runtime"]): Promise<Workspace> {
+  async provisionWorkspace(
+    userId: string,
+    runtime: Workspace["runtime"]
+  ): Promise<Workspace> {
     return {
-      id: crypto.randomUUID(),
+      id: this.generateId(),
       userId,
       status: "provisioning",
       runtime,
@@ -16,4 +19,8 @@ export class Orchestrator {
   }
 
   async deleteWorkspace(id: string): Promise<void> {}
+
+  private generateId(): string {
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  }
 }
